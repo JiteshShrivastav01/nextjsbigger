@@ -1,13 +1,21 @@
 import { MongoClient, ObjectId } from "mongodb";
+import { Fragment } from "react";
+import Head from "next/head";
 
 const Meetup = (props) => {
   return (
-    <section>
-      <img src={props.meetUpData.image} alt="" style={{ width: "400px" }} />
-      <h3>{props.meetUpData.title}</h3>
-      <address>{props.meetUpData.address}</address>
-      <p>{props.meetUpData.description}</p>
-    </section>
+    <Fragment>
+      <Head>
+        <title>{props.meetUpData.title}</title>
+        <meta name="description" content={props.meetUpData.description} />
+      </Head>
+      <section>
+        <img src={props.meetUpData.image} alt="" style={{ width: "400px" }} />
+        <h3>{props.meetUpData.title}</h3>
+        <address>{props.meetUpData.address}</address>
+        <p>{props.meetUpData.description}</p>
+      </section>
+    </Fragment>
   );
 };
 
@@ -19,8 +27,11 @@ export async function getStaticPaths() {
   const db = client.db();
   const meetupcollection = db.collection("meetups");
   const meetups = await meetupcollection.find({}, { _id: 1 }).toArray();
+
+  client.close();
+
   return {
-    fallback: false,
+    fallback: true,
     paths: meetups.map((meetup) => ({
       params: { meetupId: meetup._id.toString() },
     })),
@@ -39,6 +50,7 @@ export async function getStaticProps(context) {
   const selectedmeetup = await meetupcollection.findOne({
     _id: ObjectId(meetupId),
   });
+
   client.close();
 
   return {
